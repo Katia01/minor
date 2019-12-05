@@ -30,7 +30,7 @@ def Compute_Knee_Angle (xyz_THI, xyz_KNE, xyz_ANK):
     scalar = np.dot(vector_THI_KNE, vector_ANK_KNE)
 
     teta = math.acos(scalar/norm_ab)
-    knee_angle = math.degrees(teta)
+    knee_angle = round(math.degrees(teta),1)
 
     if  math.isnan(knee_angle):
         knee_angle = 0.0

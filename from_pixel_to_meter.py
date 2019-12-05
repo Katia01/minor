@@ -10,10 +10,10 @@ import math
 
 def Convert_Pixel_To_Meter(xyz_coordinates):
     """
-    Transforme xy prediction coordinates from pixel to meter.
+    Convert xy prediction coordinates from pixel to meter.
 
-    - Input: Vector containing xyz body parts coordinates of the patient, with xy in pixel
-    - Ouput: Vector containing xyz body parts coordinates of the patient, all in meter
+    - Input: Vector containing xyz body parts coordinates, with xy in pixel
+    - Ouput: Vector containing xyz body parts coordinates, all in meter
     """
 
     # FOV of the 3D camera:  (H x V x D): 69.4° x 42.5° x 77° (+/- 3°)
@@ -32,6 +32,7 @@ def Convert_Pixel_To_Meter(xyz_coordinates):
 
     x_coordinate = xyz_coordinates[0]
     y_coordinate = xyz_coordinates[1]
+
     # Convert z from mm to m and add a value smaller than mm to avoid date conversion during csv saving
     z_new_coordinate = (xyz_coordinates[2] * 0.001) + 0.001
 
@@ -41,18 +42,17 @@ def Convert_Pixel_To_Meter(xyz_coordinates):
     x_new_coordinate = (x_coordinate * L_meter)/L_pixel
     y_new_coordinate =(y_coordinate * H_meter)/L_pixel
 
-    xyz_new_coordinates.append(x_new_coordinate)
-    xyz_new_coordinates.append(y_new_coordinate)
-    xyz_new_coordinates.append(z_new_coordinate)
+    xyz_new_coordinates.append(round(x_new_coordinate,2))
+    xyz_new_coordinates.append(round(y_new_coordinate,2))
+    xyz_new_coordinates.append(round(z_new_coordinate,2))
 
     return xyz_new_coordinates
 
 def Compute_Norm(xyz_right_coordinates, xyz_left_coordinates):
-
     """
-    Compute the norm between the right and the left body parts
+    Compute the norm between the right and the left body parts.
 
-    - Input: Two vector containing xyz right and left body parts coordinates of the patient
+    - Input: Two vector containing xyz right and left body parts coordinates
     - Ouput: The norm between the left and the right point
     """
 

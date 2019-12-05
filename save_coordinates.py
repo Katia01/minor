@@ -3,7 +3,7 @@ Created on November 2019
 
 @author: Katia Schalk
 
-Create a csv file where xyz values predicted or estimated by the Neural-Net are saved.
+Create csv files where different values predicted or estimated with the Neural-Net are saved.
 """
 
 import csv
@@ -13,7 +13,7 @@ def Create_csv_File(filename1, filename2):
     """
     Creates an output file in .csv format.
 
-    - Input: The name of of .csv output file to be created
+    - Input: The name of the .csv output file to be created
     """
 
     with open(filename1, 'w') as csvFile:
@@ -28,20 +28,25 @@ def Create_csv_File(filename1, filename2):
         csvFile.close()
 
     with open(filename2, 'w') as csvFile:
-        col2 = ['Time', 'RKNE_angle', 'LKNE_angle']
+        col2 = ['REAR_x', 'REAR_y', 'LEAR_x', 'LEAR_y',\
+               'RSHO_x', 'RSHO_y', 'LSHO_x', 'LSHO_y', \
+               'RTHI_x', 'RTHI_y', 'LTHI_x', 'LTHI_y', \
+               'RKNE_x', 'RKNE_y', 'LKNE_x', 'LKNE_y', \
+               'RANK_x', 'RANK_y', 'LANK_x', 'LANK_y']
 
         writer = csv.writer(csvFile)
         writer.writerow(col2)
         csvFile.close()
 
-def Save_Coordinates_csv(xyz_REAR, xyz_LEAR, xyz_RSHO, xyz_LSHO, xyz_RTHI, xyz_LTHI, xyz_RKNE, xyz_LKNE, xyz_RANK, xyz_LANK, filename1):
+def Save_xyz_Coordinates_csv(xyz_REAR, xyz_LEAR, xyz_RSHO, xyz_LSHO, xyz_RTHI, xyz_LTHI, xyz_RKNE, xyz_LKNE, xyz_RANK, xyz_LANK, filename1):
     """
-    Save the xyz coordinates in an already created .csv file.
+    Save the xyz coordinates (in meter) in an already created .csv file.
 
-    - Input: A vector containing the right xyz coordinates to save (in meter)
-             A vector containing the left xyz coordinates to save (in meter)
+    - Input: 5 vectors containing the right xyz coordinates to save (in meter)
+             5 vectors containing the left xyz coordinates to save (in meter)
              The name of the existing .csv file
     """
+    
     EAR = [xyz_REAR[0], xyz_REAR[1], xyz_REAR[2], xyz_LEAR[0], xyz_LEAR[1], xyz_LEAR[2]]
     SHO = [xyz_RSHO[0], xyz_RSHO[1], xyz_RSHO[2], xyz_LSHO[0], xyz_LSHO[1], xyz_LSHO[2]]
     THI = [xyz_RTHI[0], xyz_RTHI[1], xyz_RTHI[2], xyz_LTHI[0], xyz_LTHI[1], xyz_LTHI[2]]
@@ -55,16 +60,22 @@ def Save_Coordinates_csv(xyz_REAR, xyz_LEAR, xyz_RSHO, xyz_LSHO, xyz_RTHI, xyz_L
         writer.writerow(row)
         csvFile.close()
 
-def Save_Angle_csv(RKNE_angle, LKNE_angle, filename2, time):
+def Save_xy_Coordinates_csv(xy_REAR, xy_LEAR, xy_RSHO, xy_LSHO, xy_RTHI, xy_LTHI, xy_RKNE, xy_LKNE, xy_RANK, xy_LANK, filename2):
     """
-    Save the knee angles in an already created .csv file.
+    Save the xy coordinates (in pixel) in an already created .csv file.
 
-    - Input: The right knee angle to save (in degree)
-             The left knee angle to save (in degree)
+    - Input: 5 vectors containing the right xy coordinates to save (in pixel)
+             5 vectors containing the left xy coordinates to save (in pixel)
              The name of the existing .csv file
     """
 
-    row = [time, RKNE_angle, LKNE_angle]
+    EAR = [xy_REAR[0], xy_REAR[1], xy_LEAR[0], xy_LEAR[1]]
+    SHO = [xy_RSHO[0], xy_RSHO[1], xy_LSHO[0], xy_LSHO[1]]
+    THI = [xy_RTHI[0], xy_RTHI[1], xy_LTHI[0], xy_LTHI[1]]
+    KNE = [xy_RKNE[0], xy_RKNE[1], xy_LKNE[0], xy_LKNE[1]]
+    ANK = [xy_RANK[0], xy_RANK[1], xy_LANK[0], xy_LANK[1]]
+
+    row = np.concatenate((EAR, SHO, THI, KNE, ANK), axis=None)
 
     with open(filename2, 'a') as csvFile:
         writer = csv.writer(csvFile)

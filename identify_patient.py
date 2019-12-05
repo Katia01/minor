@@ -1,7 +1,7 @@
 """
 Created on November 2019
 
-@author: Katia
+@author: Katia Schalk
 
 Identify which subject is the patient thanks to the green stickers place on his chest and on his back.
 """
@@ -46,28 +46,27 @@ def Identify_Patient_Coordinates(image_filename):
 
 def Determine_Patient_index(right_x, right_y, left_x, left_y, xy_reference_patient):
     """
-    Determine which predicted coordinates correspond to the patient.
+    Determine the vector index corresponding to the patient.
 
     - Input: 4 vectors with the different coordinates of all the subject
              1 vector containing the x and y coordinates of the green sticker
-    - Output: 2 vectors with the left and right body parts coordinates of the patient
+    - Output: The vector index of the patient
     """
 
     difference_x = []
     difference_y = []
 
+    # Check for the subject presenting the smallest x distance with the sticker
     for subject in range(len(right_x)):
         difference_x.append(abs(right_x[subject] - xy_reference_patient[0]) + abs(left_x[subject] - xy_reference_patient[0]))
-        #difference_y.append(abs(right_y[subject] - xy_reference_patient[1]) + abs(left_y[subject] - xy_reference_patient[1]))
 
-    #print(difference_y)
     index = np.argmin(difference_x)
 
     return index
 
 def Select_Patient_Coordinates(right_x, right_y, left_x, left_y, index):
     """
-    Determine which predicted coordinates correspond to the patient.
+    Exctract xy patient coordinates using the index.
 
     - Input: 4 vectors with the different coordinates of all the subject
              1 vector containing the x and y coordinates of the green sticker
