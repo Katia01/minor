@@ -20,9 +20,9 @@ def Correct_Shift(right_xy, left_xy):
     left_xy_correct = []
 
     right_x = int((((right_xy[0]-320)*32.5)/35)+320)
-    right_y = int((((right_xy[1]-320)*32.5)/35)+320)
+    right_y = int((((right_xy[1]-240)*20)/21)+240)
     left_x = int((((left_xy[0]-320)*32.5)/35)+320)
-    left_y = int((((left_xy[1]-320)*32.5)/35)+320)
+    left_y = int((((left_xy[1]-240)*20)/21)+240)
 
     right_xy_correct.append(right_x)
     right_xy_correct.append(right_y)
