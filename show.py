@@ -232,17 +232,14 @@ class KeypointPainter(object):
 
         self._draw_skeleton(ax, x, y, v, color=color)
 
-        if ann.joint_scales is not None:
-            self._draw_scales(ax, x, y, v, color, ann.joint_scales)
+            #if ann.joint_scales is not None:
+            #self._draw_scales(ax, x, y, v, color, ann.joint_scales)
 
-        if self.show_box:
-            self._draw_box(ax, x, y, v, color, ann.score())
+            #if self.show_box:
+            #self._draw_box(ax, x, y, v, color, ann.score())
 
         if text is not None:
             self._draw_text(ax, x, y, v, text, color)
-
-        if hasattr(ann, 'decoding_order'):
-            self._draw_decoding_order(ax, ann.decoding_order)
 
     @staticmethod
     def _draw_decoding_order(ax, decoding_order):

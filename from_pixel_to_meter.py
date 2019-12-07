@@ -1,9 +1,9 @@
 """
 Created on November 2019
 
-@author: Katia
+@author: Katia Schalk
 
-Transform xy prediction coordinates from pixel to meter and compute distance
+Transform xy prediction coordinates from pixel to meter and compute distance.
 """
 
 import math

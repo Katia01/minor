@@ -19,25 +19,28 @@ def Identify_Patient_Coordinates(image_filename):
 
     img = cv2.imread(image_filename)
     hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-    #mask = cv2.inRange(hsv, (25, 52, 72), (102, 255,255))
     mask = cv2.inRange(hsv, (25, 52, 72), (90, 255,255))
 
-    start = True
     xy_patient_coordinates = []
     x_coordinates = []
     y_coordinates = []
 
-    imask = mask>0
+    imask = mask > 0
     green = np.zeros_like(img, np.uint8)
     green[imask] = img[imask]
 
-    for i in range (481):
-        for j in range (641):
-            if start and mask[i][j]>0:
-
+    for i in range (481-7):
+        for j in range (641-8):
+            if mask[i][j] == 255 and mask[i+7][j+8] == 255:
                 x_coordinates.append(j)
                 y_coordinates.append(i)
-                #start = False
+
+    if not x_coordinates:
+        for i in range (481-4):
+            for j in range (641-5):
+                if mask[i][j] == 255 and mask[i+4][j+5] == 255:
+                    x_coordinates.append(j)
+                    y_coordinates.append(i)
 
     xy_patient_coordinates.append(np.median(x_coordinates))
     xy_patient_coordinates.append(np.median(y_coordinates))

@@ -25,7 +25,7 @@ import torch
 import statistics
 
 from .network import nets
-from . import datasets, decoder, show, transforms, return_coordinates, posture_image, utilities, identify_patient, from_pixel_to_meter, save_coordinates, extract_z_coordinates, posture_image
+from . import datasets, decoder, show, transforms, return_coordinates, posture_image, utilities, identify_patient, from_pixel_to_meter, save_coordinates, extract_z_coordinates, posture_image, field_of_view
 
 LOG = logging.getLogger(__name__)
 
@@ -151,7 +151,7 @@ def main():
     time = 0.0
 
     # Create a .csv file where the xyz coordinates will be saved  at the end
-    save_coordinates.Create_csv_File('xyz_coordinates_meter.csv', 'xy_coordinates_pixel.csv')
+    save_coordinates.Create_csv_File('xyz_coordinates.csv', 'xy_coordinates.csv')
 
     for batch_i, (image_tensors_batch, _, meta_batch) in enumerate(data_loader):
         fields_batch = processor.fields(image_tensors_batch)
@@ -228,6 +228,15 @@ def main():
         RKNE_patient_xy, LKNE_patient_xy = identify_patient.Select_Patient_Coordinates(RKNE_x, RKNE_y, LKNE_x, LKNE_y, index)
         RANK_patient_xy, LANK_patient_xy = identify_patient.Select_Patient_Coordinates(RANK_x, RANK_y, LANK_x, LANK_y, index)
 
+        # Correct the difference of field of view of both cameras
+        # Depth Field of View (FOV): 65°±2° x 40°±1° x 72°±2°
+        # RGB Sensor FOV (H x V x D): 69.4° x 42.5° x 77° (+/- 3°)
+        REAR_patient_xy, LEAR_patient_xy = field_of_view.Correct_Shift(REAR_patient_xy, LEAR_patient_xy )
+        RSHO_patient_xy, LSHO_patient_xy = field_of_view.Correct_Shift(RSHO_patient_xy, LSHO_patient_xy)
+        RTHI_patient_xy, LTHI_patient_xy = field_of_view.Correct_Shift(RTHI_patient_xy, LTHI_patient_xy)
+        RKNE_patient_xy, LKNE_patient_xy = field_of_view.Correct_Shift(RKNE_patient_xy, LKNE_patient_xy)
+        RANK_patient_xy, LANK_patient_xy = field_of_view.Correct_Shift(RANK_patient_xy, LANK_patient_xy)
+
         true = os.path.isfile("/Users/KatiaSchalk/Desktop/openpifpaf/depth_values_2/array_" + str(array_number) + ".npy" )
 
         if true:
@@ -300,8 +309,8 @@ def main():
         else:
             LKNE_angle = 0.0
 
-        save_coordinates.Save_xy_Coordinates_csv(REAR_patient_xy, LEAR_patient_xy, RSHO_patient_xy, LSHO_patient_xy, RTHI_patient_xy, LTHI_patient_xy, RKNE_patient_xy, LKNE_patient_xy, RANK_patient_xy, LANK_patient_xy, 'xy_coordinates_pixel.csv')
-        save_coordinates.Save_xyz_Coordinates_csv(REAR_patient_xyz, LEAR_patient_xyz, RSHO_patient_xyz, LSHO_patient_xyz, RTHI_patient_xyz, LTHI_patient_xyz, RKNE_patient_xyz, LKNE_patient_xyz, RANK_patient_xyz, LANK_patient_xyz, 'xyz_coordinates_meter.csv')
+        save_coordinates.Save_xy_Coordinates_csv(REAR_patient_xy, LEAR_patient_xy, RSHO_patient_xy, LSHO_patient_xy, RTHI_patient_xy, LTHI_patient_xy, RKNE_patient_xy, LKNE_patient_xy, RANK_patient_xy, LANK_patient_xy, 'xy_coordinates.csv')
+        save_coordinates.Save_xyz_Coordinates_csv(REAR_patient_xyz, LEAR_patient_xyz, RSHO_patient_xyz, LSHO_patient_xyz, RTHI_patient_xyz, LTHI_patient_xyz, RKNE_patient_xyz, LKNE_patient_xyz, RANK_patient_xyz, LANK_patient_xyz, 'xyz_coordinates.csv')
 
         # Switch to the z array corresponding to the new image
         array_number = array_number + 5
