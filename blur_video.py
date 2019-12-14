@@ -128,6 +128,11 @@ def main():
     skeleton_painter = show.KeypointPainter(show_box=False, color_connections=True,
                                             markersize=1, linewidth=6)
 
+
+    # Since prediction starts for the image 5 (first image is 1), the z coordinates starts for array 4 (first array is 0)
+    array_number = 29
+    array_name = "/Users/KatiaSchalk/Desktop/openpifpaf/depth_values_2/array_"
+
     for batch_i, (image_tensors_batch, _, meta_batch) in enumerate(data_loader):
         image_tensors_batch_gpu = image_tensors_batch.to(args.device, non_blocking=True)
         fields_batch = processor.fields(image_tensors_batch_gpu)
@@ -182,64 +187,84 @@ def main():
                                        dpi_factor=args.dpi_factor) as ax:
                     skeleton_painter.keypoints(ax, keypoint_sets, scores=scores)
 
-        # Compute radius and center of the blur faces
-        radius, number_subjects = blur_faces.Return_Radius (output_path + '.pifpaf.json')
-        center_x, center_y = blur_faces.Return_Circle_Center(output_path + '.pifpaf.json')
+        # Set this value equal to the distance between the subject and the camera + 1 meter
+        z_limit = 8000
 
-        # Check if someone is present on the picture
-        if radius:
+        # Read the given .json coordinates file and Return the left and right xy coordinates of all subjects present on the picture
+        Nose_x, Nose_y = return_coordinates.Return_Nose_Coordinates(output_path + '.pifpaf.json')
+        REAR_x, REAR_y, LEAR_x, LEAR_y = return_coordinates.Return_Ears_Coordinates(output_path + '.pifpaf.json')
+        RSHO_x, RSHO_y, LSHO_x, LSHO_y = return_coordinates.Return_Shoulders_Coordinates(output_path + '.pifpaf.json')
 
-            #For the first picture
-            if batch_i == 0:
-                # Create reference values
-                reference_radius, reference_center_x, reference_center_y = utilities.init_references(number_subjects)
+        number_subjects = len(nose_x)
 
-            print('avant')
-            print(radius)
-            print(center_x)
-            print(center_y)
-            #print(reference_radius)
-            #print(reference_center_x)
-            #print(reference_center_y)
+        true = os.path.isfile(array_name + str(array_number) + ".npy" )
 
-            #For all the other pictures
-            if batch_i !=0:
-                # Check difference of lenght between values and their associated references
-                difference_radius, difference_center_x, difference_center_y = utilities.difference_prediction(radius, reference_radius, center_x, reference_center_x, center_y, reference_center_y)
+        if number_subjects != 0:
 
-                # Set values and references at the same lenght and in the same order if values are longer than references
-                if difference_radius > 0 and difference_center_x > 0 and difference_center_y > 0:
-                    radius, reference_radius, center_x, reference_center_x, center_y, reference_center_y = utilities.adjust_length_reference(radius, reference_radius, difference_radius, center_x,  reference_center_x, difference_center_x, center_y, reference_center_y, difference_center_y)
-                    print('AA')
-                # Set values and references at the same lenght and in the same order if references are longer than values
-                if difference_radius < 0 and difference_center_x < 0 and difference_center_y < 0:
-                    reference_radius, reference_center_x, reference_center_y = utilities.adjust_length(radius, reference_radius, difference_radius, center_x,  reference_center_x, difference_center_x, center_y, reference_center_y, difference_center_y)
-                    print('BB')
-                # Order the computed values in an ascending manner to be sure to always compare the reference value and the actual
-                # value of the same subject
-                if difference_radius == 0:
-                    radius, center_x, center_y = utilities.ordered_prediction(radius, reference_radius, center_x, reference_center_x,center_y, reference_center_y)
-                    print('CC')
+            for subject in range(number_subjects):
+                Nose_xy = []
+                Nose_xy.append(Nose_x[subject])
+                Nose_xy.append(Nose_y[subject])
 
-            # Check variation between actual values and values from the previous picture (references).
-            variation_radius, variation_center_x, variation_center_y = utilities.variation_prediction(radius, reference_radius, center_x, reference_center_x, center_y, reference_center_y)
+                REAR_xy = []
+                REAR_xy.append(REAR_x[subject])
+                REAR_xy.append(REAR_y[subject])
 
-            # Adapt values with references if  the variations are significative
-            radius, reference_radius = utilities.compare(radius, reference_radius, 6,variation_radius, batch_i)
-            center_x, reference_center_x = utilities.compare(center_x, reference_center_x, 5,variation_center_x, batch_i)
-            center_y, reference_center_y = utilities.compare(center_y, reference_center_y, 5,variation_center_y, batch_i)
+                LEAR_xy = []
+                LEAR_xy.append(LEAR_x[subject])
+                LEAR_xy.append(LEAR_y[subject])
 
-            print('hi')
-            print(radius)
-            print(center_x)
-            print(center_y)
+                RSHO_xy = []
+                RSHO_xy.append(RSHO_x[subject])
+                RSHO_xy.append(RSHO_y[subject])
 
-            # Save a new image .blur.png which is the original one with all the faces blurred
-            blur_faces.Blur_Face(output_path, output_path + '.pifpaf.json', (361,641,3), number_subjects, radius, center_x, center_y)
+                LSHO_xy = []
+                LSHO_xy.append(LSHO_x[subject])
+                LSHO_xy.append(LSHO_y[subject])
 
-        else:
-            # Save a new image .blur.png which is the original one if nobody is present on the picture
-            shutil.copy(output_path, output_path + ".blur.png")
+                Nose_xy, Nose_xy = field_of_view.Correct_Shift(Nose_xy, Nose_xy )
+                REAR_xy, LEAR_xy = field_of_view.Correct_Shift(REAR_xy, LEAR_xy )
+                RSHO_xy, LSHO_xy = field_of_view.Correct_Shift(RSHO_xy, LSHO_xy)
+
+                # Return the xyz coordinates of the subject
+                if true and Nose_xy[0] != 0 and Nose_xy[1] != 0:
+                    Nose_xyz, Nose_xyz = extract_z_coordinates.Return_Center_xyz_Coordinates(Nose_xy, array_number, z_limit, array_name)
+                else:
+                    Nose_xyz = [0, 0, 0]
+
+                if true and REAR_xy[0] != 0 and REAR_patient_xy[1] != 0 and LEAR_patient_xy[0] != 0 and LEAR_patient_xy[1] != 0:
+                    REAR_xyz, LEAR_xyz = extract_z_coordinates.Return_xyz_Coordinates(REAR_xy, LEAR_xy, array_number, z_limit, array_name)
+                else:
+                    REAR_xyz = [0, 0, 0]
+                    LEAR_xyz = [0, 0, 0]
+
+                if true and RSHO_xy[0] != 0 and RSHO_xy[1] != 0 and LSHO_xy[0] != 0 and LSHO_xy[1] != 0:
+                    RSHO_xyz, LSHO_xyz = extract_z_coordinates.Return_xyz_Coordinates(RSHO_xy, LSHO_xy, array_number, z_limit, array_name)
+                else:
+                    RSHO_xyz = [0, 0, 0]
+                    LSHO_xyz = [0, 0, 0]
+
+                    # Compute radius and center of the blur faces
+                if Nose_xyz !=0:
+                    radius = blur_faces.Return_Radius(Nose_xyz)
+                    center_x, center_y = blur_faces.Return_Circle_Center(Nose_xyz)
+                else:
+                    if REAR_xyz !=0:
+                        radius = blur_faces.Return_Radius(REAR_xyz)
+                        center_x, center_y = blur_faces.Return_Circle_Center(REAR_xyz)
+                    else:
+                        if LEAR_xyz !=0:
+                            radius = blur_faces.Return_Radius(LEAR_xyz)
+                            center_x, center_y = blur_faces.Return_Circle_Center(LEAR_xyz)
+
+                # Save a new image .blur.png which is the original one with all the faces blurred
+                blur_faces.Blur_Face(output_path, output_path + '.pifpaf.json', (361,641,3), number_subjects, radius, center_x, center_y)
+            else:
+                # Save a new image .blur.png which is the original one if nobody is present on the picture
+                shutil.copy(output_path, output_path + ".blur.png")
+
+        # Switch to the z array corresponding to the new image
+        array_number = array_number + 5
 
 if __name__ == '__main__':
     main()

@@ -147,11 +147,17 @@ def main():
     )
 
     # Since prediction starts for the image 5 (first image is 1), the z coordinates starts for array 4 (first array is 0)
-    array_number = 29
-    time = 0.0
+    #array_number = 29
+    #array_name = "/Users/KatiaSchalk/Desktop/openpifpaf/depth_values_2/array_"
+
+    #array_number = 159
+    #array_name = "/Users/KatiaSchalk/Desktop/openpifpaf/depth_values/array_"
+
+    array_number = 4
+    array_name = "/Users/KatiaSchalk/Desktop/openpifpaf/depth_values_3/array_"
 
     # Create a .csv file where the xyz coordinates will be saved  at the end
-    save_coordinates.Create_csv_File('xyz_coordinates.csv', 'xy_coordinates.csv')
+    save_coordinates.Create_csv_File('xyz_coordinates.csv', 'xy_coordinates.csv', 'xyz_center_coordinates.csv')
 
     for batch_i, (image_tensors_batch, _, meta_batch) in enumerate(data_loader):
         fields_batch = processor.fields(image_tensors_batch)
@@ -206,7 +212,7 @@ def main():
                     skeleton_painter.annotations(ax, pred)
 
         # Set this value equal to the distance between the subject and the camera + 1 meter
-        z_limit = 9000
+        z_limit = 8000
 
         # Return the xy reference patient return_coordinates
         xy_reference_patient = identify_patient.Identify_Patient_Coordinates(output_path)
@@ -231,90 +237,96 @@ def main():
         # Correct the difference of field of view of both cameras
         # Depth Field of View (FOV): 65°±2° x 40°±1° x 72°±2°
         # RGB Sensor FOV (H x V x D): 69.4° x 42.5° x 77° (+/- 3°)
+        print(REAR_patient_xy)
+        print(LEAR_patient_xy)
         REAR_patient_xy, LEAR_patient_xy = field_of_view.Correct_Shift(REAR_patient_xy, LEAR_patient_xy )
         RSHO_patient_xy, LSHO_patient_xy = field_of_view.Correct_Shift(RSHO_patient_xy, LSHO_patient_xy)
         RTHI_patient_xy, LTHI_patient_xy = field_of_view.Correct_Shift(RTHI_patient_xy, LTHI_patient_xy)
         RKNE_patient_xy, LKNE_patient_xy = field_of_view.Correct_Shift(RKNE_patient_xy, LKNE_patient_xy)
         RANK_patient_xy, LANK_patient_xy = field_of_view.Correct_Shift(RANK_patient_xy, LANK_patient_xy)
 
-        true = os.path.isfile("/Users/KatiaSchalk/Desktop/openpifpaf/depth_values_2/array_" + str(array_number) + ".npy" )
+        print(REAR_patient_xy)
+        print(LEAR_patient_xy)
 
-        if true:
-            # Return the xyz coordinates of the patient
-            if REAR_patient_xy[0] != 0 and REAR_patient_xy[1] != 0 and LEAR_patient_xy[0] != 0 and LEAR_patient_xy[1] != 0:
-                REAR_patient_xyz, LEAR_patient_xyz = extract_z_coordinates.Return_xyz_Coordinates(REAR_patient_xy, LEAR_patient_xy, array_number, z_limit)
-                REAR_patient_xyz = from_pixel_to_meter.Convert_Pixel_To_Meter(REAR_patient_xyz)
-                LEAR_patient_xyz = from_pixel_to_meter.Convert_Pixel_To_Meter(LEAR_patient_xyz)
-            else:
-                REAR_patient_xyz = [0, 0, 0]
-                LEAR_patient_xyz = [0, 0, 0]
+        CEAR_xy = []
+        CSHO_xy = []
+        CTHI_xy = []
 
-            if RSHO_patient_xy[0] != 0 and RSHO_patient_xy[1] != 0 and LSHO_patient_xy[0] != 0 and LSHO_patient_xy[1] != 0:
-                print(RSHO_patient_xy)
-                print(LSHO_patient_xy)
-                RSHO_patient_xyz, LSHO_patient_xyz = extract_z_coordinates.Return_xyz_Coordinates(RSHO_patient_xy, LSHO_patient_xy, array_number, z_limit)
-                print(RSHO_patient_xyz)
-                print(LSHO_patient_xyz)
-                RSHO_patient_xyz  = from_pixel_to_meter.Convert_Pixel_To_Meter(RSHO_patient_xyz)
-                LSHO_patient_xyz  = from_pixel_to_meter.Convert_Pixel_To_Meter(LSHO_patient_xyz)
-                print(RSHO_patient_xyz)
-                print(LSHO_patient_xyz)
-            else:
-                RSHO_patient_xyz = [0, 0, 0]
-                LSHO_patient_xyz = [0, 0, 0]
+        #true = os.path.isfile("/Users/KatiaSchalk/Desktop/openpifpaf/depth_values_2/array_" + str(array_number) + ".npy" )
+        true = os.path.isfile(array_name + str(array_number) + ".npy" )
 
-            if RTHI_patient_xy[0] != 0 and RTHI_patient_xy[1] != 0 and LTHI_patient_xy[0] != 0 and LTHI_patient_xy[1] != 0:
-                RTHI_patient_xyz, LTHI_patient_xyz = extract_z_coordinates.Return_xyz_Coordinates(RTHI_patient_xy, LTHI_patient_xy, array_number, z_limit)
-                RTHI_patient_xyz  = from_pixel_to_meter.Convert_Pixel_To_Meter(RTHI_patient_xyz)
-                LTHI_patient_xyz  = from_pixel_to_meter.Convert_Pixel_To_Meter(LTHI_patient_xyz)
-            else:
-                RTHI_patient_xyz = [0, 0, 0]
-                LTHI_patient_xyz = [0, 0, 0]
+        # Return the xyz coordinates of the patient
+        if  true and REAR_patient_xy[0] != 0 and REAR_patient_xy[1] != 0 and LEAR_patient_xy[0] != 0 and LEAR_patient_xy[1] != 0:
+            CEAR_xy.append(int((REAR_patient_xy[0] + LEAR_patient_xy[0])/2))
+            CEAR_xy.append(int((REAR_patient_xy[1] + LEAR_patient_xy[1])/2))
 
-            if RKNE_patient_xy[0] != 0 and RKNE_patient_xy[1] != 0 and LKNE_patient_xy[0] != 0 and LKNE_patient_xy[1] != 0:
-                RKNE_patient_xyz, LKNE_patient_xyz = extract_z_coordinates.Return_xyz_Coordinates(RKNE_patient_xy, LKNE_patient_xy, array_number, z_limit)
-                RKNE_patient_xyz  = from_pixel_to_meter.Convert_Pixel_To_Meter(RKNE_patient_xyz)
-                LKNE_patient_xyz  = from_pixel_to_meter.Convert_Pixel_To_Meter(LKNE_patient_xyz)
-            else:
-                RKNE_patient_xyz = [0, 0, 0]
-                LKNE_patient_xyz = [0, 0, 0]
+            CEAR_patient_xyz = extract_z_coordinates.Return_Center_xyz_Coordinates(CEAR_xy, array_number, z_limit, array_name)
+            REAR_patient_xyz, LEAR_patient_xyz = extract_z_coordinates.Return_xyz_Coordinates(REAR_patient_xy, LEAR_patient_xy, array_number, z_limit, array_name)
 
-            if RANK_patient_xy[0] != 0 and RANK_patient_xy[1] != 0 and LANK_patient_xy[0] != 0 and LANK_patient_xy[1] != 0:
-                RANK_patient_xyz, LANK_patient_xyz = extract_z_coordinates.Return_xyz_Coordinates(RANK_patient_xy, LANK_patient_xy, array_number, z_limit)
-                RANK_patient_xyz  = from_pixel_to_meter.Convert_Pixel_To_Meter(RANK_patient_xyz)
-                LANK_patient_xyz  = from_pixel_to_meter.Convert_Pixel_To_Meter(LANK_patient_xyz)
-            else:
-                RANK_patient_xyz = [0, 0, 0]
-                LANK_patient_xyz = [0, 0, 0]
+            REAR_patient_xyz = from_pixel_to_meter.Convert_Pixel_To_Meter(REAR_patient_xyz)
+            LEAR_patient_xyz = from_pixel_to_meter.Convert_Pixel_To_Meter(LEAR_patient_xyz)
+            CEAR_patient_xyz = from_pixel_to_meter.Convert_Pixel_To_Meter(CEAR_patient_xyz)
         else:
             REAR_patient_xyz = [0, 0, 0]
             LEAR_patient_xyz = [0, 0, 0]
+            CEAR_patient_xyz = [0, 0, 0]
+
+        if true and RSHO_patient_xy[0] != 0 and RSHO_patient_xy[1] != 0 and LSHO_patient_xy[0] != 0 and LSHO_patient_xy[1] != 0:
+            CSHO_xy.append(int((RSHO_patient_xy[0] + LSHO_patient_xy[0])/2))
+            CSHO_xy.append(int((RSHO_patient_xy[1] + LSHO_patient_xy[1])/2))
+
+            CSHO_patient_xyz = extract_z_coordinates.Return_Center_xyz_Coordinates(CSHO_xy, array_number, z_limit, array_name)
+            RSHO_patient_xyz, LSHO_patient_xyz = extract_z_coordinates.Return_xyz_Coordinates(RSHO_patient_xy, LSHO_patient_xy, array_number, z_limit, array_name)
+
+            RSHO_patient_xyz  = from_pixel_to_meter.Convert_Pixel_To_Meter(RSHO_patient_xyz)
+            LSHO_patient_xyz  = from_pixel_to_meter.Convert_Pixel_To_Meter(LSHO_patient_xyz)
+            CSHO_patient_xyz = from_pixel_to_meter.Convert_Pixel_To_Meter(CSHO_patient_xyz)
+
+            print(RSHO_patient_xyz)
+            print(LSHO_patient_xyz)
+            print(CSHO_patient_xyz)
+        else:
             RSHO_patient_xyz = [0, 0, 0]
             LSHO_patient_xyz = [0, 0, 0]
+            CSHO_patient_xyz = [0, 0, 0]
+
+        if true and RTHI_patient_xy[0] != 0 and RTHI_patient_xy[1] != 0 and LTHI_patient_xy[0] != 0 and LTHI_patient_xy[1] != 0:
+            CTHI_xy.append(int((RTHI_patient_xy[0] + LTHI_patient_xy[0])/2))
+            CTHI_xy.append(int((RTHI_patient_xy[1] + LTHI_patient_xy[1])/2))
+
+            CTHI_patient_xyz = extract_z_coordinates.Return_Center_xyz_Coordinates(CTHI_xy, array_number, z_limit, array_name)
+            RTHI_patient_xyz, LTHI_patient_xyz = extract_z_coordinates.Return_xyz_Coordinates(RTHI_patient_xy, LTHI_patient_xy, array_number, z_limit,  array_name)
+
+            RTHI_patient_xyz  = from_pixel_to_meter.Convert_Pixel_To_Meter(RTHI_patient_xyz)
+            LTHI_patient_xyz  = from_pixel_to_meter.Convert_Pixel_To_Meter(LTHI_patient_xyz)
+            CTHI_patient_xyz = from_pixel_to_meter.Convert_Pixel_To_Meter(CTHI_patient_xyz)
+        else:
             RTHI_patient_xyz = [0, 0, 0]
             LTHI_patient_xyz = [0, 0, 0]
+            CTHI_patient_xyz  = [0, 0, 0]
+
+        if true and RKNE_patient_xy[0] != 0 and RKNE_patient_xy[1] != 0 and LKNE_patient_xy[0] != 0 and LKNE_patient_xy[1] != 0:
+            RKNE_patient_xyz, LKNE_patient_xyz = extract_z_coordinates.Return_xyz_Coordinates(RKNE_patient_xy, LKNE_patient_xy, array_number, z_limit,  array_name)
+            RKNE_patient_xyz  = from_pixel_to_meter.Convert_Pixel_To_Meter(RKNE_patient_xyz)
+            LKNE_patient_xyz  = from_pixel_to_meter.Convert_Pixel_To_Meter(LKNE_patient_xyz)
+        else:
             RKNE_patient_xyz = [0, 0, 0]
             LKNE_patient_xyz = [0, 0, 0]
+
+        if true and RANK_patient_xy[0] != 0 and RANK_patient_xy[1] != 0 and LANK_patient_xy[0] != 0 and LANK_patient_xy[1] != 0:
+            RANK_patient_xyz, LANK_patient_xyz = extract_z_coordinates.Return_xyz_Coordinates(RANK_patient_xy, LANK_patient_xy, array_number, z_limit,  array_name)
+            RANK_patient_xyz  = from_pixel_to_meter.Convert_Pixel_To_Meter(RANK_patient_xyz)
+            LANK_patient_xyz  = from_pixel_to_meter.Convert_Pixel_To_Meter(LANK_patient_xyz)
+        else:
             RANK_patient_xyz = [0, 0, 0]
             LANK_patient_xyz = [0, 0, 0]
 
-        # Compute right and left knee angle
-        if RTHI_patient_xy[0] != 0 and RTHI_patient_xy[1] != 0 and RKNE_patient_xy[0] != 0 and RKNE_patient_xy[1] != 0 and RANK_patient_xy[0] != 0 and RANK_patient_xy[1] != 0:
-            RKNE_angle = posture_image.Compute_Knee_Angle (RTHI_patient_xyz, RKNE_patient_xyz, RANK_patient_xyz)
-        else:
-            RKNE_angle = 0.0
-
-        if LTHI_patient_xy[0] != 0 and LTHI_patient_xy[1] != 0 and LKNE_patient_xy[0] != 0 and LKNE_patient_xy[1] != 0 and LANK_patient_xy[0] != 0 and LANK_patient_xy[1] != 0:
-            LKNE_angle = posture_image.Compute_Knee_Angle (LTHI_patient_xyz, LKNE_patient_xyz, LANK_patient_xyz)
-        else:
-            LKNE_angle = 0.0
-
         save_coordinates.Save_xy_Coordinates_csv(REAR_patient_xy, LEAR_patient_xy, RSHO_patient_xy, LSHO_patient_xy, RTHI_patient_xy, LTHI_patient_xy, RKNE_patient_xy, LKNE_patient_xy, RANK_patient_xy, LANK_patient_xy, 'xy_coordinates.csv')
         save_coordinates.Save_xyz_Coordinates_csv(REAR_patient_xyz, LEAR_patient_xyz, RSHO_patient_xyz, LSHO_patient_xyz, RTHI_patient_xyz, LTHI_patient_xyz, RKNE_patient_xyz, LKNE_patient_xyz, RANK_patient_xyz, LANK_patient_xyz, 'xyz_coordinates.csv')
+        save_coordinates.Save_Center_xyz_Coordinates_csv(CEAR_patient_xyz, CSHO_patient_xyz, CTHI_patient_xyz, 'xyz_center_coordinates.csv')
 
         # Switch to the z array corresponding to the new image
         array_number = array_number + 5
-        time = time + 1.0
 
 if __name__ == '__main__':
     main()
