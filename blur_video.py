@@ -24,7 +24,7 @@ import PIL
 import torch
 
 from .network import nets
-from . import datasets, decoder, show, transforms, blur_faces, utilities
+from . import datasets, decoder, show, transforms, blur_faces, utilities, return_coordinates, field_of_view, extract_z_coordinates
 import shutil
 
 def cli():
@@ -129,9 +129,9 @@ def main():
                                             markersize=1, linewidth=6)
 
 
-    # Since prediction starts for the image 5 (first image is 1), the z coordinates starts for array 4 (first array is 0)
-    array_number = 29
-    array_name = "/Users/KatiaSchalk/Desktop/openpifpaf/depth_values_2/array_"
+        #Hugo2
+    array_number = 47
+    array_name = "/Users/KatiaSchalk/Desktop/openpifpaf/depth_values_Hugo2/array_"
 
     for batch_i, (image_tensors_batch, _, meta_batch) in enumerate(data_loader):
         image_tensors_batch_gpu = image_tensors_batch.to(args.device, non_blocking=True)
@@ -195,9 +195,13 @@ def main():
         REAR_x, REAR_y, LEAR_x, LEAR_y = return_coordinates.Return_Ears_Coordinates(output_path + '.pifpaf.json')
         RSHO_x, RSHO_y, LSHO_x, LSHO_y = return_coordinates.Return_Shoulders_Coordinates(output_path + '.pifpaf.json')
 
-        number_subjects = len(nose_x)
+        number_subjects = len(Nose_x)
 
         true = os.path.isfile(array_name + str(array_number) + ".npy" )
+
+        array_radius = []
+        array_center_x = []
+        array_center_y = []
 
         if number_subjects != 0:
 
@@ -228,11 +232,11 @@ def main():
 
                 # Return the xyz coordinates of the subject
                 if true and Nose_xy[0] != 0 and Nose_xy[1] != 0:
-                    Nose_xyz, Nose_xyz = extract_z_coordinates.Return_Center_xyz_Coordinates(Nose_xy, array_number, z_limit, array_name)
+                    Nose_xyz = extract_z_coordinates.Return_Center_xyz_Coordinates(Nose_xy, array_number, z_limit, array_name)
                 else:
                     Nose_xyz = [0, 0, 0]
 
-                if true and REAR_xy[0] != 0 and REAR_patient_xy[1] != 0 and LEAR_patient_xy[0] != 0 and LEAR_patient_xy[1] != 0:
+                if true and REAR_xy[0] != 0 and REAR_xy[1] != 0 and LEAR_xy[0] != 0 and LEAR_xy[1] != 0:
                     REAR_xyz, LEAR_xyz = extract_z_coordinates.Return_xyz_Coordinates(REAR_xy, LEAR_xy, array_number, z_limit, array_name)
                 else:
                     REAR_xyz = [0, 0, 0]
@@ -244,24 +248,38 @@ def main():
                     RSHO_xyz = [0, 0, 0]
                     LSHO_xyz = [0, 0, 0]
 
-                    # Compute radius and center of the blur faces
+                # Compute radius and center of the blur faces
                 if Nose_xyz !=0:
                     radius = blur_faces.Return_Radius(Nose_xyz)
-                    center_x, center_y = blur_faces.Return_Circle_Center(Nose_xyz)
-                else:
-                    if REAR_xyz !=0:
-                        radius = blur_faces.Return_Radius(REAR_xyz)
-                        center_x, center_y = blur_faces.Return_Circle_Center(REAR_xyz)
-                    else:
-                        if LEAR_xyz !=0:
-                            radius = blur_faces.Return_Radius(LEAR_xyz)
-                            center_x, center_y = blur_faces.Return_Circle_Center(LEAR_xyz)
+                    center_x, center_y = blur_faces.Return_Circle_Center(Nose_x[subject], Nose_y[subject])
 
-                # Save a new image .blur.png which is the original one with all the faces blurred
-                blur_faces.Blur_Face(output_path, output_path + '.pifpaf.json', (361,641,3), number_subjects, radius, center_x, center_y)
-            else:
-                # Save a new image .blur.png which is the original one if nobody is present on the picture
-                shutil.copy(output_path, output_path + ".blur.png")
+                else:
+                    if REAR_xyz !=0 and LEAR_xyz == 0:
+                        radius = blur_faces.Return_Radius(REAR_xyz)
+                        center_x, center_y = blur_faces.Return_Circle_Center(REAR_x[subject], REAR_y[subject])
+                    else:
+                        if LEAR_xyz !=0 and REAR_xyz ==0:
+                            radius = blur_faces.Return_Radius(LEAR_xyz)
+                            center_x, center_y = blur_faces.Return_Circle_Center(LEAR_x[subject], LEAR_y[subject])
+                        else:
+                            if LEAR_xyz !=0 and REAR_xyz !=0:
+                                CEAR_xyz = []
+                                CEAR_xyz.append((REAR_xyz[0]+ LEAR_xyz[0])/2);
+                                CEAR_xyz.append((REAR_xyz[1]+ LEAR_xyz[1])/2);
+                                CEAR_xyz.append((REAR_xyz[2]+ LEAR_xyz[2])/2);
+
+                                radius = blur_faces.Return_Radius(CEAR_xyz)
+                                center_x, center_y = blur_faces.Return_Circle_Center((LEAR_x[subject]+LEAR_x[subject])/2 , (LEAR_y[subject]+LEAR_y[subject])/2)
+
+                array_radius.append(radius)
+                array_center_x.append(center_x)
+                array_center_y.append(center_y)
+
+            # Save a new image .blur.png which is the original one with all the faces blurred
+            blur_faces.Blur_Face(output_path, output_path + '.pifpaf.json', (481,641,3), number_subjects, array_radius, array_center_x, array_center_y)
+        else:
+            # Save a new image .blur.png which is the original one if nobody is present on the picture
+            shutil.copy(output_path, output_path + ".blur.png")
 
         # Switch to the z array corresponding to the new image
         array_number = array_number + 5

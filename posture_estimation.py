@@ -147,14 +147,19 @@ def main():
     )
 
     # Since prediction starts for the image 5 (first image is 1), the z coordinates starts for array 4 (first array is 0)
-    #array_number = 29
+    #array_number = 27
     #array_name = "/Users/KatiaSchalk/Desktop/openpifpaf/depth_values_2/array_"
 
     #array_number = 159
     #array_name = "/Users/KatiaSchalk/Desktop/openpifpaf/depth_values/array_"
 
-    array_number = 4
-    array_name = "/Users/KatiaSchalk/Desktop/openpifpaf/depth_values_3/array_"
+    #Katia3
+    #array_number = 82
+    #array_name = "/Users/KatiaSchalk/Desktop/openpifpaf/depth_values_Katia3/array_"
+
+    #Hugo2
+    array_number = 47
+    array_name = "/Users/KatiaSchalk/Desktop/openpifpaf/depth_values_Hugo2/array_"
 
     # Create a .csv file where the xyz coordinates will be saved  at the end
     save_coordinates.Create_csv_File('xyz_coordinates.csv', 'xy_coordinates.csv', 'xyz_center_coordinates.csv')
@@ -235,15 +240,19 @@ def main():
         RANK_patient_xy, LANK_patient_xy = identify_patient.Select_Patient_Coordinates(RANK_x, RANK_y, LANK_x, LANK_y, index)
 
         # Correct the difference of field of view of both cameras
-        # Depth Field of View (FOV): 65°±2° x 40°±1° x 72°±2°
-        # RGB Sensor FOV (H x V x D): 69.4° x 42.5° x 77° (+/- 3°)
+        # Depth Field of View (FOV): 65°±2° x 40°±1° x 72°±2° /  RGB Sensor FOV (H x V x D): 69.4° x 42.5° x 77° (+/- 3°)
         print(REAR_patient_xy)
         print(LEAR_patient_xy)
-        REAR_patient_xy, LEAR_patient_xy = field_of_view.Correct_Shift(REAR_patient_xy, LEAR_patient_xy )
-        RSHO_patient_xy, LSHO_patient_xy = field_of_view.Correct_Shift(RSHO_patient_xy, LSHO_patient_xy)
-        RTHI_patient_xy, LTHI_patient_xy = field_of_view.Correct_Shift(RTHI_patient_xy, LTHI_patient_xy)
-        RKNE_patient_xy, LKNE_patient_xy = field_of_view.Correct_Shift(RKNE_patient_xy, LKNE_patient_xy)
-        RANK_patient_xy, LANK_patient_xy = field_of_view.Correct_Shift(RANK_patient_xy, LANK_patient_xy)
+        if REAR_patient_xy !=0 and LEAR_patient_xy !=0:
+            REAR_patient_xy, LEAR_patient_xy = field_of_view.Correct_Shift(REAR_patient_xy, LEAR_patient_xy)
+        if RSHO_patient_xy !=0 and LSHO_patient_xy !=0:
+            RSHO_patient_xy, LSHO_patient_xy = field_of_view.Correct_Shift(RSHO_patient_xy, LSHO_patient_xy)
+        if RTHI_patient_xy !=0 and LTHI_patient_xy !=0:
+            RTHI_patient_xy, LTHI_patient_xy = field_of_view.Correct_Shift(RTHI_patient_xy, LTHI_patient_xy)
+        if RKNE_patient_xy !=0 and LKNE_patient_xy !=0:
+            RKNE_patient_xy, LKNE_patient_xy = field_of_view.Correct_Shift(RKNE_patient_xy, LKNE_patient_xy)
+        if RANK_patient_xy !=0 and LANK_patient_xy !=0:
+            RANK_patient_xy, LANK_patient_xy = field_of_view.Correct_Shift(RANK_patient_xy, LANK_patient_xy)
 
         print(REAR_patient_xy)
         print(LEAR_patient_xy)
@@ -252,7 +261,6 @@ def main():
         CSHO_xy = []
         CTHI_xy = []
 
-        #true = os.path.isfile("/Users/KatiaSchalk/Desktop/openpifpaf/depth_values_2/array_" + str(array_number) + ".npy" )
         true = os.path.isfile(array_name + str(array_number) + ".npy" )
 
         # Return the xyz coordinates of the patient

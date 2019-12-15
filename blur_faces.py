@@ -20,42 +20,58 @@ def Return_Radius(array_xyz):
     - Output: A vector containing the subjects face Return_Radius
               The number of subject
     """
-
-    if 0 < array_xyz[3] <= 1
-        radius = 35
+    print(array_xyz[2]/1000)
+    if 0 < array_xyz[2]/1000 <= 0.5:
+        radius = 70
     else:
-        if 1 < array_xyz[3] <= 2:
-            radius = 30
+        if 0.5 < array_xyz[2]/1000 <= 1.5:
+            radius = 65
         else:
-            if 2 < array_xyz[3] <= 4:
-                radius = 25
+            if  1.5 < array_xyz[2]/1000 <= 2:
+                radius = 60
             else:
-                    if 4 < array_xyz[3] <= 6:
-                        radius = 20
+                if  1.5 < array_xyz[2]/1000 <= 2:
+                    radius = 55
+                else:
+                    if 2 < array_xyz[2]/1000 <= 2.5:
+                        radius = 50
                     else:
-                        if 6 < array_xyz[3] <= 8:
-                            radius = 15
+                        if 2.5 < array_xyz[2]/1000 <= 3:
+                            radius = 40
                         else:
-                            if 8 < array_xyz[3]:
-                                radius = 10
+                            if 3 < array_xyz[2]/1000 <= 3.5:
+                                radius = 35
+                            else:
+                                if 3.5 < array_xyz[2]/1000 <= 4:
+                                    radius = 30
+                                else:
+                                    if 4 < array_xyz[2]/1000 <= 4.5:
+                                        radius = 25
+                                    else:
+                                        if 4.5 < array_xyz[2]/1000 <= 5.5:
+                                            radius = 20
+                                        else:
+                                            if 5.5 < array_xyz[2]/1000 <= 6.5:
+                                                radius = 17
+                                            else:
+                                                if 5.5 < array_xyz[2]/1000 <= 7.5:
+                                                    radius = 15
+                                                else:
+                                                    if 7.5 < array_xyz[2]/1000:
+                                                        radius = 10
     return radius
 
-def Return_Circle_Center(array_xyz):
+def Return_Circle_Center(value_x, value_y):
     """
     Return subjects face center.
 
     - Input: .json file containing xy prediction coordinates
     - Output: Two vector, one with all the x center coordinates and one with all the y center coordinates
     """
-    center_x = []
-    center_y = []
 
-    center_x = array_xyz[1]
-    center_y = array_xyz[2]
+    return value_x, value_y
 
-    return center_x, center_y
-
-def Blur_Face (image_filename, coordinate_filename, picture_size, radius, center_x, center_y):
+def Blur_Face (image_filename, coordinate_filename, picture_size, number_subjects, radius, center_x, center_y):
     """
     Blur faces on the original image.
 
@@ -73,6 +89,11 @@ def Blur_Face (image_filename, coordinate_filename, picture_size, radius, center
     blurred_img = cv2.GaussianBlur(img, (23, 23), 11)
 
     mask = np.zeros(picture_size, dtype=np.uint8)
-    mask = cv2.circle(mask, (center_x, center_y), radius,(255, 255, 255), -1)
-    out = np.where(mask!=np.array([255, 255, 255]), out, blurred_img)
-    cv2.imwrite(image_filename + ".blur.png", out)
+
+    for subject in range(number_subjects):
+
+        mask = cv2.circle(mask, (center_x[subject], center_y[subject]), radius[subject],(255, 255, 255), -1)
+
+        out = np.where(mask!=np.array([255, 255, 255]), out, blurred_img)
+
+        cv2.imwrite(image_filename + ".blur.png", out)

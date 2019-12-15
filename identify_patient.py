@@ -11,10 +11,10 @@ import numpy as np
 
 def Identify_Patient_Coordinates(image_filename):
     """
-    Determine the position of the green sticker.
+    Use a green filter to determine the position of the green sticker.
 
     - Input: The original picture
-    - Output: A vector containing the x and y coordinates of the green sticker
+    - Output: A vector containing the xy coordinates of the green sticker
     """
 
     img = cv2.imread(image_filename)
@@ -49,17 +49,16 @@ def Identify_Patient_Coordinates(image_filename):
 
 def Determine_Patient_index(right_x, right_y, left_x, left_y, xy_reference_patient):
     """
-    Determine the vector index corresponding to the patient.
+    Determine the index corresponding to the patient.
 
     - Input: 4 vectors with the different coordinates of all the subject
-             1 vector containing the x and y coordinates of the green sticker
-    - Output: The vector index of the patient
+             1 vector containing the xy coordinates of the green sticker
+    - Output: The index of the patient
     """
 
     difference_x = []
     difference_y = []
 
-    # Check for the subject presenting the smallest x distance with the sticker
     for subject in range(len(right_x)):
         difference_x.append(abs(right_x[subject] - xy_reference_patient[0]) + abs(left_x[subject] - xy_reference_patient[0]))
 
@@ -72,8 +71,8 @@ def Select_Patient_Coordinates(right_x, right_y, left_x, left_y, index):
     Exctract xy patient coordinates using the index.
 
     - Input: 4 vectors with the different coordinates of all the subject
-             1 vector containing the x and y coordinates of the green sticker
-    - Output: 2 vectors with the left and right body parts coordinates of the patient
+             The index of the patient
+    - Output: 2 vectors with the left and right xy coordinates of the patient
     """
 
     xy_right_patient_coordinates = []
