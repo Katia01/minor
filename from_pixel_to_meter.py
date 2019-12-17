@@ -33,8 +33,8 @@ def Convert_Pixel_To_Meter(xyz_coordinates):
     x_coordinate = xyz_coordinates[0]
     y_coordinate = xyz_coordinates[1]
 
-    # Convert z from mm to m and add a value smaller than mm to avoid date conversion during csv saving
-    z_new_coordinate = (xyz_coordinates[2] * 0.001) + 0.001
+    # Convert z from mm to m
+    z_new_coordinate = (xyz_coordinates[2] * 0.001)
 
     L_meter = tan_alpha * z_new_coordinate
     H_meter = tan_beta * z_new_coordinate

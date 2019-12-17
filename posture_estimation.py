@@ -219,6 +219,8 @@ def main():
         # Set this value equal to the distance between the subject and the camera + 1 meter
         z_limit = 8000
 
+        field_of_view.Rescale_Depth_Image(array_name, array_number)
+
         # Return the xy reference patient return_coordinates
         xy_reference_patient = identify_patient.Identify_Patient_Coordinates(output_path)
 
